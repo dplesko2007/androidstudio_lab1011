@@ -18,7 +18,7 @@ val Montserrat = FontFamily(
 )
 val Typography = Typography(
     displayLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = AbrilFatface,
         fontWeight = FontWeight.Normal,
         fontSize = 36.sp,
     ),
