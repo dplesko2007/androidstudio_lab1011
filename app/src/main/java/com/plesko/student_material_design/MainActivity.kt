@@ -6,6 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,11 +23,13 @@ import com.plesko.student_material_design.ui.theme.Student_Material_DesignTheme
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -39,8 +44,20 @@ import com.plesko.student_material_design.data.students
 import java.nio.file.WatchEvent
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.Alignment
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,14 +112,41 @@ class MainActivity : ComponentActivity() {
         student: Student,
         modifier: Modifier = Modifier
     ) {
+        var expanded by remember { mutableStateOf(false) }
         Card(modifier = modifier) {
-            Row(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(dimensionResource(R.dimen.padding_small))
+            Column(
+                modifier = Modifier
+                    .animateContentSize(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioHighBouncy,
+                            stiffness = Spring.StiffnessMedium
+                        )
+                    )
             ) {
-                StudentIcon(student.imageResourceId)
-                StudentInformation(student.name, student.age)
+                Row(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(dimensionResource(R.dimen.padding_small))
+                ) {
+                    StudentIcon(student.imageResourceId)
+                    StudentInformation(student.name, student.age)
+                    Spacer(modifier = Modifier.weight(1f))
+                    StudentItemButton(
+                        expanded = expanded,
+                        onClick = { expanded = !expanded }
+                    )
+                }
+                if (expanded) {
+                    StudentDescription(
+                        student.description,
+                        modifier = Modifier.padding(
+                            start = dimensionResource(R.dimen.padding_medium),
+                            top = dimensionResource(R.dimen.padding_small),
+                            end = dimensionResource(R.dimen.padding_medium),
+                            bottom = dimensionResource(R.dimen.padding_medium)
+                        )
+                    )
+                }
             }
         }
     }
@@ -150,6 +194,41 @@ class MainActivity : ComponentActivity() {
             ),
             modifier = modifier
         )
+    }
+    @Composable
+    fun StudentDescription(
+       @StringRes studentDescription: Int,
+       modifier: Modifier = Modifier
+    ) {
+        Column(
+            modifier = modifier
+        ) {
+            Text(
+                text = stringResource(R.string.about),
+                style = MaterialTheme.typography.labelSmall
+            )
+            Text(
+                text = stringResource(studentDescription),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+    }
+    @Composable
+    private fun StudentItemButton(
+        expanded: Boolean,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier
+    ) {
+        IconButton(
+            onClick = onClick,
+            modifier = modifier
+        ) {
+            Icon(
+                imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                contentDescription = stringResource(R.string.expand_button_content_description),
+                tint = MaterialTheme.colorScheme.secondary
+            )
+        }
     }
     @Preview
     @Composable
